@@ -10,14 +10,27 @@ import {
   TextSection,
   ItemStyle,
   CharacterTitle,
-  ContainerSection
-
+  ContainerSection,
 } from "./styles";
-import { loadFavorites } from "../store/storage";
+import { loadFavorites, saveFavorites } from "../store/storage";
 import { AntDesign } from "@expo/vector-icons";
 
 const Favorites = () => {
   const [favorites, setFavorites] = useState([]);
+  const [search, setSearch] = useState("");
+  const [notFound, setNotFound] = useState(false);
+
+  const searchCharacter = (text) => {
+    const filteredCharacters = favorites.filter((character) => {
+      return character.name
+        .toString()
+        .toLowerCase()
+        .includes(text.toLowerCase());
+    });
+    setSearch(
+      filteredCharacters.length ? filteredCharacters : [{ name: "Not found" }]
+    );
+  };
 
   useEffect(() => {
     loadFavorites().then((favorites) => {
@@ -25,7 +38,15 @@ const Favorites = () => {
         setFavorites(favorites);
       }
     });
-  }, []);
+  }, [search]);
+
+  const removeFavorite = (character) => {
+    const updatedFavorites = favorites.filter(
+      (favorite) => favorite.name !== character.name
+    );
+    setFavorites(updatedFavorites);
+    saveFavorites(updatedFavorites);
+  };
 
   const renderItem = ({ item }) => (
     <ScrollView>
@@ -37,16 +58,16 @@ const Favorites = () => {
             <TextSection> {item.birth_year}</TextSection>
           </ContainerSection>
         </View>
-        <TouchableOpacity onPress={() => handleFavoritePress(item)}>
+        <TouchableOpacity onPress={() => removeFavorite(item)}>
           <AntDesign
             name={
-              favorites.some((favorite) => favorite?.id === item?.id)
+              favorites.some((favorite) => favorite?.name === item?.name)
                 ? "heart"
                 : "hearto"
             }
             size={14}
             color={
-              favorites.some((favorite) => favorite?.id === item?.id)
+              favorites.some((favorite) => favorite?.name === item?.name)
                 ? `${theme.color.green}`
                 : `${theme.color.green}`
             }
@@ -64,16 +85,18 @@ const Favorites = () => {
           <Input
             placeholder="Search"
             placeholderTextColor={`${theme.color.placeholder}`}
+            onChangeText={searchCharacter}
+            onClear={() => setSearch("")}
           />
         </BoxInput>
       </Box>
       <View>
-        {favorites.length === 0 ? (
+        {search.length === 0 ? (
           <TextTitle>No favorite characters</TextTitle>
         ) : (
           <FlatList
-            data={favorites}
-            keyExtractor={(item) => item?.id?.toString()}
+            data={search}
+            keyExtractor={(item) => item?.name?.toString()}
             renderItem={renderItem}
           />
         )}

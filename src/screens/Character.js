@@ -25,27 +25,26 @@ const Characters = () => {
   const { data, error, isLoading } = useGetIdQuery();
 
   const handleFavoritePress = (item) => {
-    const isFavorite = item.id in favorites;
+    const isFavorite = item.name in favorites;
     if (isFavorite) {
       const newFavorites = { ...favorites };
-      delete newFavorites[item.id];
+      delete newFavorites[item.name];
       setFavorites(newFavorites);
       setCharacters((prevCharacters) =>
         prevCharacters.map((character) =>
-          character.id === item.id ? { ...character, favorite: true } : character
+          character.name === item.name ? { ...character, favorite: true } : character
         )
       );
     } else {
-      setFavorites((prevFavorites) => ({ ...prevFavorites, [item.id]: item }));
+      setFavorites((prevFavorites) => ({ ...prevFavorites, [item.name]: item }));
       setCharacters((prevCharacters) =>
         prevCharacters.map((character) =>
-          character.id === item.id ? { ...character, favorite: false } : character
+          character.name === item.name ? { ...character, favorite: false } : character
         )
       );
     }
   };
  
-
   useEffect(() => {
     const fetchFavorites = async () => {
       const updatedCharacters = await loadFavorites();
@@ -72,7 +71,7 @@ const Characters = () => {
         </View>
         <TouchableOpacity onPress={() => handleFavoritePress(item)}>
           <AntDesign
-            name={item.id in favorites ? "heart" : "hearto"}
+            name={item.name in favorites ? "heart" : "hearto"}
             size={14}
             color={theme.color.green}
           />
@@ -93,7 +92,7 @@ const Characters = () => {
             <FlatList
               data={data.results}
               renderItem={renderItem}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item) => item.name}
             />
           </>
         )}
